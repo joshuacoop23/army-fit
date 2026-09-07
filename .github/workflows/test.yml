@@ -1,0 +1,66 @@
+# Run the scoring tests on every pull request into main.
+#
+# Why this exists now, when DECISIONS.md said Actions were not worth the
+# complexity in Phase 1: the worst thing this project can ship is a wrong
+# scoring number. Phase 1 had no numbers to get wrong. It does now.
+#
+# This does NOT deploy. GitHub Pages still publishes main directly from the
+# branch, exactly as before. All this does is refuse to let a red pull request
+# be merged, which is only useful if branch protection is switched on:
+#   Settings -> Branches -> Add rule for `main`
+#   -> Require status checks to pass -> select "unit tests" and "table provenance"
+
+name: tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # No `npm install` step, because there is nothing to install. The test
+      # runner is built into Node. If a dependency ever appears here, that is
+      # the signal to stop and have the conversation CLAUDE.md asks for.
+      - name: Run tests
+        run: node --test
+
+  table-provenance:
+    name: table provenance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install the PDF reader
+        run: pip install pdfplumber==0.11.4
+
+      # Re-derives data/aft-scoring.json from the PDF committed alongside it
+      # and fails if they disagree. This is what stops a scoring value from
+      # being edited by hand -- an edit that the unit tests would only catch if
+      # someone had happened to write a test for that exact cell.
+      #
+      # If this job ever becomes more trouble than it is worth, deleting it
+      # costs nothing: the unit tests in the other job still run.
+      - name: Check the tables still match the source PDF
+        run: |
+          python3 tools/extract_scoring_tables.py \
+            data/sources/AFT_Scoring_Scales_250601.pdf \
+            data/aft-scoring.json \
+            --check
