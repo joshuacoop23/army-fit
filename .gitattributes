@@ -1,0 +1,21 @@
+# Line endings.
+#
+# Windows editors save CRLF; Linux and macOS save LF. Without this file Git
+# stores whatever it is handed, so a file merely re-saved on Windows shows up
+# as "every line changed" in the diff. That is noise in a pull request, and
+# noise in a pull request is how a real change gets waved through unread.
+#
+#   text=auto  Git decides what is text and normalizes it to LF in the repo
+#   eol=lf     and checks it back out as LF everywhere, Windows included
+*       text=auto eol=lf
+
+# Binary files must never be line-ending converted. Listing them now is cheap
+# insurance for when source PDFs and screenshots land in the repo.
+*.pdf   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
