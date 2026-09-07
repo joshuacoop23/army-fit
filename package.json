@@ -1,0 +1,13 @@
+{
+  "name": "army-fit",
+  "version": "0.0.0",
+  "private": true,
+  "description": "AFT scoring, an honest verdict, and a training plan.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
